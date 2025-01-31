@@ -10,7 +10,8 @@ prompt.get(["userSelection"], function (err, result) {
         return;
     }
 
-    let userSelection = result.userSelection.toUpperCase();
+    // Convert user input to uppercase and remove spaces
+    let userSelection = result.userSelection.trim().toUpperCase();
 
     if (!["ROCK", "PAPER", "SCISSORS"].includes(userSelection)) {
         console.log("Invalid choice! Please choose ROCK, PAPER, or SCISSORS.");
@@ -32,7 +33,7 @@ const prompt = require("prompt");
 // Start the prompt system
 prompt.start();
 
-console.log("Welcome to Rock, Paper, Scissors!");
+
 
 // Ask the user for their selection
 prompt.get(["userSelection"], function (err, result) {
