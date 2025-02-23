@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= title %> - Vishal Portfolio</title>
+  <title>{{title}} - Vishal Portfolio</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="/ASSIGNMENT01/Personal portfolio/public/css/styles.css">
+  <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
   <header>
@@ -22,27 +22,21 @@
       </div>
     </nav>
   </header>
- <!-- Main Content -->
-<main class="container mt-4">
-    <h1>Welcome to My Portfolio</h1>
-    <p>
-      Hi, I’m Vishal Boora, a final-year Computer Programming student at Georgian College.
-      This portfolio showcases my journey, projects, and skills in web development, mobile applications, and programming.
-      Through this site, you’ll learn more about my background, my work, and my passion for technology.
-      Feel free to explore and reach out through the Contact page!
-    </p>
+
+  <!-- Main Content -->
+  <main class="container mt-4">
+    {{{body}}}
   </main>
-  
 
   <!-- Footer -->
   <footer class="text-center mt-4 py-3 bg-light">
     <p>© 2023 Vishal Boora</p>
     <a href="https://github.com/mrboora" class="me-3">
-        <i class="fab fa-github"></i> GitHub
-      </a>
-      <a href="https://www.linkedin.com/in/vishal-boora-866aa3265/">
-        <i class="fab fa-linkedin"></i> LinkedIn
-      </a>
+      <i class="fab fa-github"></i> GitHub
+    </a>
+    <a href="https://www.linkedin.com/in/vishal-boora-866aa3265/">
+      <i class="fab fa-linkedin"></i> LinkedIn
+    </a>
   </footer>
 </body>
 </html>
