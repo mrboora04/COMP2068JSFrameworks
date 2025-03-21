@@ -1,0 +1,9 @@
+<h2>Your Assignments</h2>
+<a href="/add">Add Assignment</a>
+<ul>
+  {{#each assignments}}
+    <li>{{title}} - Due: {{dueDate}} ({{priority}}) 
+      <a href="/edit/{{_id}}">Edit</a> | <a href="/delete/{{_id}}" onclick="return confirm('Sure?')">Delete</a>
+    </li>
+  {{/each}}
+</ul>

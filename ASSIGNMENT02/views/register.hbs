@@ -1,37 +1,7 @@
-router.post('/register', async (req, res) => {
-  const { username, email, password } = req.body;
-
-  // Simple validation
-  if (!username || !email || !password) {
-    req.flash('error_msg', 'All fields are required');
-    return res.redirect('/users/register');
-  }
-  if (password.length < 6) {
-    req.flash('error_msg', 'Password must be at least 6 characters');
-    return res.redirect('/users/register');
-  }
-  if (!email.includes('@')) {
-    req.flash('error_msg', 'Invalid email format');
-    return res.redirect('/users/register');
-  }
-
-  try {
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      req.flash('error_msg', 'Email already registered');
-      return res.redirect('/users/register');
-    }
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({
-      username: username,
-      email: email,
-      password: hashedPassword
-    });
-    await newUser.save();
-    req.flash('success_msg', 'You are now registered! Please log in.');
-    res.redirect('/users/login');
-  } catch (error) {
-    console.error('Registration error:', error);
-    res.redirect('/users/register');
-  }
-});
+<h2>Register</h2>
+<form method="POST" action="/users/register">
+  <label>Username:</label><br><input type="text" name="username" required><br>
+  <label>Email:</label><br><input type="email" name="email" required><br>
+  <label>Password:</label><br><input type="password" name="password" required><br>
+  <button type="submit">Register</button>
+</form>

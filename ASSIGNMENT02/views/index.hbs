@@ -1,2 +1,7 @@
 <h1>{{title}}</h1>
-<p>Welcome to {{title}}</p>
+<p>Track your coding assignments with ease!</p>
+{{#if user}}
+  <a href="/dashboard">Dashboard</a> | <a href="/users/profile">Profile</a> | <a href="/users/logout">Logout</a>
+{{else}}
+  <a href="/users/register">Register</a> | <a href="/users/login">Login</a> | <a href="/assignments">View Assignments</a>
+{{/if}}

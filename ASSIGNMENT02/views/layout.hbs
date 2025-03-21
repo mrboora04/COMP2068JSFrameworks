@@ -1,10 +1,21 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>{{title}}</title>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
-  </head>
-  <body>
-    {{{body}}}
-  </body>
+<head>
+  <title>{{title}}</title>
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+<body>
+  <div class="container">
+    <div class="sidebar">
+      <h3>Developer</h3>
+      <p>GitHub: <a href="https://github.com/{{githubUsername}}" target="_blank">{{githubUsername}}</a></p>
+    </div>
+    <div class="content">
+      {{#if success_msg}}<p class="success">{{success_msg}}</p>{{/if}}
+      {{#if error_msg}}<p class="error">{{error_msg}}</p>{{/if}}
+      {{#if error}}<p class="error">{{error}}</p>{{/if}}
+      {{{body}}}
+    </div>
+  </div>
+</body>
 </html>

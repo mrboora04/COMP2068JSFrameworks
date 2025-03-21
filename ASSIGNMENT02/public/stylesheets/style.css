@@ -1,8 +1,14 @@
-body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+.container {
+  display: flex;
 }
-
-a {
-  color: #00B7FF;
+.sidebar {
+  width: 200px;
+  padding: 20px;
+  background-color: #f0f0f0;
 }
+.content {
+  flex-grow: 1;
+  padding: 20px;
+}
+.success { color: green; }
+.error { color: red; }

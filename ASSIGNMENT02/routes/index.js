@@ -1,9 +1,14 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
+const Assignment = require('models/Assignment');
 
-/* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
+router.get('/', (req, res) => {
+  res.render('index', { title: 'Coding Assignment Tracker' });
+});
+
+router.get('/assignments', async (req, res) => {
+  const assignments = await Assignment.find().select('title dueDate priority');
+  res.render('assignments', { assignments });
 });
 
 module.exports = router;
