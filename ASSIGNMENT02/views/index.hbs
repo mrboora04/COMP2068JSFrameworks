@@ -1,0 +1,7 @@
+<h1>{{title}}</h1>
+<p>Stay on top of your coding assignments!</p>
+{{#if user}}
+  <a href="/dashboard">Go to Dashboard</a>
+{{else}}
+  <a href="/users/register">Register</a> | <a href="/users/login">Login</a>
+{{/if}}
