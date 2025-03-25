@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Assignment = require('models/Assignment');
+const Assignment = require('../models/Assignment');
 
 router.get('/', (req, res) => {
   res.render('index', { title: 'Coding Assignment Tracker' });

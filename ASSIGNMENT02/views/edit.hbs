@@ -1,0 +1,12 @@
+<h2>Edit Assignment</h2>
+<form method="POST" action="/edit/{{assignment._id}}">
+  <label>Title:</label><br><input type="text" name="title" value="{{assignment.title}}" required><br>
+  <label>Due Date:</label><br><input type="date" name="dueDate" value="{{assignment.dueDate}}" required><br>
+  <label>Priority:</label><br>
+  <select name="priority">
+    <option value="Low" {{#if (eq assignment.priority "Low")}}selected{{/if}}>Low</option>
+    <option value="Medium" {{#if (eq assignment.priority "Medium")}}selected{{/if}}>Medium</option>
+    <option value="High" {{#if (eq assignment.priority "High")}}selected{{/if}}>High</option>
+  </select><br>
+  <button type="submit">Update</button>
+</form>

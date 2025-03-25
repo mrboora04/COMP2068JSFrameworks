@@ -7,7 +7,7 @@ var logger = require('morgan');
 var session = require('express-session');
 var passport = require('passport');
 var flash = require('connect-flash');
-var mongoose = require('./config/db')();
+var mongoose = require('./config/db').default();
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');

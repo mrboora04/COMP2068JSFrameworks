@@ -1,0 +1,12 @@
+<h2>Add Assignment</h2>
+<form method="POST" action="/add">
+  <label>Title:</label><br><input type="text" name="title" required><br>
+  <label>Due Date:</label><br><input type="date" name="dueDate" required><br>
+  <label>Priority:</label><br>
+  <select name="priority">
+    <option value="Low">Low</option>
+    <option value="Medium">Medium</option>
+    <option value="High">High</option>
+  </select><br>
+  <button type="submit">Add</button>
+</form>
