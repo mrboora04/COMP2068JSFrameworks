@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const Assignment = require('../models/Assignment');
 
 router.get('/', (req, res) => {
   res.render('index', { title: 'Coding Assignment Tracker' });
 });
 
-router.get('/assignments', async (req, res) => {
-  const assignments = await Assignment.find().select('title dueDate priority');
-  res.render('assignments', { assignments });
+router.get('/calendar', async (req, res) => {
+  if (!req.user) return res.redirect('/login');
+  const assignments = await require('../models/assignment').find({ user: req.user.id });
+  res.render('calendar', { assignments });
 });
 
 module.exports = router;

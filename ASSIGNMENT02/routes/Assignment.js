@@ -1,51 +1,108 @@
 const express = require('express');
 const router = express.Router();
-const Assignment = require('../models/Assignment');
-const transporter = require('../config/email');
+const Assignment = require('../models/assignment');
 
 function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) return next();
   req.flash('error_msg', 'Please log in');
-  res.redirect('/users/login');
+  res.redirect('/login');
 }
 
 router.get('/dashboard', ensureAuthenticated, async (req, res) => {
-  const assignments = await Assignment.find({ user: req.user.id });
-  res.render('dashboard', { assignments });
+  if (!res.locals.dbConnected) return res.render('dashboard', { assignments: [] });
+  try {
+    let assignments = await Assignment.find({ user: req.user.id });
+    // Format dueDate for each assignment
+    assignments = assignments.map(assignment => {
+      assignment.dueDateFormatted = assignment.dueDate
+        ? new Date(assignment.dueDate).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+          })
+        : 'N/A';
+      return assignment;
+    });
+    res.render('dashboard', { assignments });
+  } catch (err) {
+    console.error('Dashboard error:', err);
+    req.flash('error_msg', 'Database error');
+    res.render('dashboard', { assignments: [] });
+  }
 });
 
 router.get('/add', ensureAuthenticated, (req, res) => res.render('add'));
 
 router.post('/add', ensureAuthenticated, async (req, res) => {
-  const { title, dueDate, priority } = req.body;
-  const assignment = new Assignment({ user: req.user.id, title, dueDate, priority });
-  await assignment.save();
-  const timeToDue = new Date(dueDate) - new Date();
-  if (timeToDue <= 24 * 60 * 60 * 1000) {
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: req.user.email,
-      subject: `Reminder: ${title} Due Soon!`,
-      text: `Due on ${dueDate}. Priority: ${priority}.`
-    });
+  if (!res.locals.dbConnected) {
+    req.flash('error_msg', 'Database unavailable');
+    return res.redirect('/add');
   }
-  res.redirect('/dashboard');
+  const { title, dueDate, priority, category, progress } = req.body;
+  try {
+    const assignment = new Assignment({ user: req.user.id, title, dueDate, priority, category, progress, notified: false });
+    await assignment.save();
+    req.flash('success_msg', 'Assignment added!');
+    res.redirect('/dashboard');
+  } catch (err) {
+    console.error('Add assignment error:', err);
+    req.flash('error_msg', 'Failed to add assignment');
+    res.redirect('/add');
+  }
 });
 
 router.get('/edit/:id', ensureAuthenticated, async (req, res) => {
-  const assignment = await Assignment.findById(req.params.id);
-  if (assignment.user.toString() !== req.user.id) return res.redirect('/dashboard');
-  res.render('edit', { assignment });
+  if (!res.locals.dbConnected) return res.redirect('/dashboard');
+  try {
+    const assignment = await Assignment.findById(req.params.id);
+    if (!assignment || assignment.user.toString() !== req.user.id) {
+      req.flash('error_msg', 'Assignment not found or unauthorized');
+      return res.redirect('/dashboard');
+    }
+    res.render('edit', { assignment });
+  } catch (err) {
+    console.error('Edit error:', err);
+    res.redirect('/dashboard');
+  }
 });
 
 router.post('/edit/:id', ensureAuthenticated, async (req, res) => {
-  await Assignment.findByIdAndUpdate(req.params.id, req.body);
-  res.redirect('/dashboard');
+  if (!res.locals.dbConnected) {
+    req.flash('error_msg', 'Database unavailable');
+    return res.redirect(`/edit/${req.params.id}`);
+  }
+  const { title, dueDate, priority, category, progress } = req.body;
+  try {
+    const assignment = await Assignment.findById(req.params.id);
+    if (!assignment || assignment.user.toString() !== req.user.id) {
+      req.flash('error_msg', 'Assignment not found or unauthorized');
+      return res.redirect('/dashboard');
+    }
+    await Assignment.findByIdAndUpdate(req.params.id, { title, dueDate, priority, category, progress });
+    req.flash('success_msg', 'Assignment updated!');
+    res.redirect('/dashboard');
+  } catch (err) {
+    console.error('Update error:', err);
+    req.flash('error_msg', 'Failed to update assignment');
+    res.redirect(`/edit/${req.params.id}`);
+  }
 });
 
-router.get('/delete/:id', ensureAuthenticated, async (req, res) => {
-  await Assignment.findByIdAndDelete(req.params.id);
-  res.redirect('/dashboard');
+router.post('/delete/:id', ensureAuthenticated, async (req, res) => {
+  if (!res.locals.dbConnected) return res.redirect('/dashboard');
+  try {
+    const assignment = await Assignment.findById(req.params.id);
+    if (!assignment || assignment.user.toString() !== req.user.id) {
+      req.flash('error_msg', 'Assignment not found or unauthorized');
+      return res.redirect('/dashboard');
+    }
+    await Assignment.findByIdAndDelete(req.params.id);
+    req.flash('success_msg', 'Assignment deleted!');
+    res.redirect('/dashboard');
+  } catch (err) {
+    console.error('Delete error:', err);
+    res.redirect('/dashboard');
+  }
 });
 
 module.exports = router;

@@ -1,7 +1,7 @@
-<h1>{{title}}</h1>
-<p>Track your coding assignments with ease!</p>
+<h1>Coding Assignment Tracker</h1>
+<p>Track your assignments with progress and deadlines.</p>
 {{#if user}}
-  <a href="/dashboard">Dashboard</a> | <a href="/users/profile">Profile</a> | <a href="/users/logout">Logout</a>
+  <p>Welcome back! View your <a href="/dashboard">Dashboard</a> or <a href="/calendar">Calendar</a>.</p>
 {{else}}
-  <a href="/users/register">Register</a> | <a href="/users/login">Login</a> | <a href="/assignments">View Assignments</a>
+  <p>Get started by logging in or registering from the sidebar.</p>
 {{/if}}

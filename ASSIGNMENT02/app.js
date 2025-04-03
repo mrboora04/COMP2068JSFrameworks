@@ -1,24 +1,39 @@
 require('dotenv').config();
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-var session = require('express-session');
-var passport = require('passport');
-var flash = require('connect-flash');
-var mongoose = require('./config/db').default();
+const createError = require('http-errors');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
+const session = require('express-session');
+const passport = require('passport');
+const flash = require('connect-flash');
+const mongoose = require('mongoose');
+const nodemailer = require('nodemailer');
+const hbs = require('hbs');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-var assignmentsRouter = require('./routes/assignments');
+const indexRouter = require('./routes/index');
+const usersRouter = require('./routes/users');
+const assignmentsRouter = require('./routes/Assignment');
 
-var app = express();
+const app = express();
 
-// Passport config
 require('./config/passport')(passport);
 
-// View engine setup
+// Register Handlebars helper for date formatting
+hbs.registerHelper('formatDate', function(date) {
+  if (!date) return 'N/A';
+  return new Date(date).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+});
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
+});
+
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
 
@@ -36,26 +51,56 @@ app.use((req, res, next) => {
   res.locals.error_msg = req.flash('error_msg');
   res.locals.error = req.flash('error');
   res.locals.user = req.user || null;
-  res.locals.githubUsername = process.env.GITHUB_USERNAME; // Pass GitHub username to views
+  res.locals.githubUsername = process.env.GITHUB_USERNAME;
+  res.locals.dbConnected = mongoose.connection.readyState === 1;
   next();
 });
 
-// Routes
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/', usersRouter);
 app.use('/', assignmentsRouter);
 
-// 404 handler
-app.use(function(req, res, next) {
+app.use((req, res, next) => {
   next(createError(404));
 });
 
-// Error handler
-app.use(function(err, req, res, next) {
+app.use((err, req, res, next) => {
+  console.error('Server Error:', err);
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
   res.status(err.status || 500);
   res.render('error');
+});
+
+require('./config/db').then(() => {
+  setInterval(async () => {
+    if (mongoose.connection.readyState !== 1) return;
+    try {
+      const Assignment = require('./models/assignment');
+      const assignments = await Assignment.find({ dueDate: { $lte: new Date(Date.now() + 24 * 60 * 60 * 1000) }, notified: { $ne: true } });
+      for (const assignment of assignments) {
+        const user = await require('./models/User').findById(assignment.user);
+        if (!user) continue;
+        await transporter.sendMail({
+          from: process.env.EMAIL_USER,
+          to: user.email,
+          subject: `Reminder: ${assignment.title} Due Soon!`,
+          text: `Progress: ${assignment.progress}%. Due on ${new Date(assignment.dueDate).toLocaleDateString()}. Priority: ${assignment.priority}.`
+        });
+        assignment.notified = true;
+        await assignment.save();
+      }
+    } catch (err) {
+      console.error('Email reminder error:', err);
+    }
+  }, 60 * 60 * 1000);
+}).catch(err => {
+  console.error('MongoDB failed to connect, running in limited mode:', err);
+});
+
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`Server running at http://localhost:${port}`);
 });
 
 module.exports = app;
