@@ -1,62 +1,70 @@
-<h2>Assignment Calendar</h2>
-<div class="timeline">
-  {{#each assignments}}
-    <div class="timeline-item" data-gif="/images/priority-{{priority}}.gif" data-title="{{title}}">
-      <div class="timeline-date">{{formatDate dueDate}}</div>
-      <div class="timeline-content">
-        <h3>{{title}}</h3>
-        <p>Progress: {{progress}}%</p>
-        <p>Priority: <span class="priority-{{priority}}">{{priority}}</span></p>
-      </div>
-    </div>
-  {{else}}
-    <div class="timeline-item">
-      <div class="timeline-date">N/A</div>
-      <div class="timeline-content">
-        <p>No assignments yet</p>
-      </div>
-    </div>
-  {{/each}}
-</div>
-<div id="priority-popup" class="priority-popup">
-  <div class="popup-content">
-    <h3 id="popup-title"></h3>
-    <img id="popup-gif" src="" alt="Priority meme">
-  </div>
-</div>
-<a href="/dashboard">Back to Dashboard</a>
+<h1>Calendar</h1>
+<h2>Upcoming Deadlines (Next 7 Days)</h2>
+{{#if upcomingAssignments.length}}
+  <ul class="list-group mb-4">
+    {{#each upcomingAssignments}}
+      <li class="list-group-item {{urgencyClass dueDate}}">
+        <strong>{{title}}</strong> - Due: {{formatDate dueDate}} 
+        ({{daysUntilDue dueDate}} days remaining) - 
+        Weight: {{weight}}% - 
+        {{#if completed}}Completed{{else}}Not Complete{{/if}}
+        <div class="mt-2">
+          <h6>To-Do List:</h6>
+          {{#if todos.length}}
+            <ul>
+              {{#each todos}}
+                <li>{{task}} - {{#if completed}}Completed{{else}}Pending{{/if}}</li>
+              {{/each}}
+            </ul>
+          {{else}}
+            <p>No to-dos yet.</p>
+          {{/if}}
+          <form action="/calendar/{{_id}}/add-todo" method="POST" class="mt-2">
+            <div class="input-group">
+              <input type="text" name="task" class="form-control" placeholder="Add a to-do" required>
+              <button type="submit" class="btn btn-primary">Add</button>
+            </div>
+          </form>
+        </div>
+      </li>
+    {{/each}}
+  </ul>
+{{else}}
+  <p class="text-muted">No assignments due in the next 7 days.</p>
+{{/if}}
 
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const items = document.querySelectorAll('.timeline-item');
-    const popup = document.getElementById('priority-popup');
-    const popupTitle = document.getElementById('popup-title');
-    const popupGif = document.getElementById('popup-gif');
-
-    if (items.length === 0) return;
-
-    let currentIndex = 0;
-
-    function showPopup(index) {
-      if (index >= items.length) {
-        popup.style.display = 'none';
-        return;
-      }
-
-      const item = items[index];
-      const title = item.getAttribute('data-title');
-      const gif = item.getAttribute('data-gif');
-
-      popupTitle.textContent = title;
-      popupGif.src = gif;
-      popup.style.display = 'block';
-
-      setTimeout(() => {
-        popup.style.display = 'none';
-        showPopup(index + 1);
-      }, 5000); // 5 seconds
-    }
-
-    showPopup(0);
-  });
-</script>
+<h2>All Assignments</h2>
+<table class="table">
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Due Date</th>
+      <th>Priority</th>
+      <th>Category</th>
+      <th>Weight</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each allAssignments}}
+      <tr>
+        <td>{{title}}</td>
+        <td>{{formatDate dueDate}}</td>
+        <td>{{priority}}</td>
+        <td>{{category}}</td>
+        <td>{{weight}}%</td>
+        <td>{{#if completed}}Completed{{else}}Not Complete{{/if}}</td>
+      </tr>
+    {{else}}
+      <tr>
+        <td colspan="6">No assignments scheduled.</td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table>
+<a href="/dashboard" class="btn btn-secondary">Back to Dashboard</a>
+<style>
+  .urgent { background-color: #f8d7da; }
+  .warning { background-color: #fff3cd; }
+  .safe { background-color: #d4edda; }
+</style>

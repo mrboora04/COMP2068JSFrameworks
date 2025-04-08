@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{title}}</title>
+  <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+</head>
+<body>
+  <div class="container mt-5">
+    <h1>{{title}}</h1>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Due Date</th>
+          <th>Priority</th>
+          <th>Category</th>
+          <th>Progress</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each assignments}}
+          <tr>
+            <td>{{title}}</td>
+            <td>{{formatDate dueDate}}</td>
+            <td>{{priority}}</td>
+            <td>{{category}}</td>
+            <td>{{progress}}%</td>
+          </tr>
+        {{else}}
+          <tr>
+            <td colspan="5">No assignments available.</td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+    <a href="/" class="btn btn-secondary">Back to Home</a>
+  </div>
+</body>
+</html>

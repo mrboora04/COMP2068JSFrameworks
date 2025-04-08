@@ -1,107 +1,128 @@
 const express = require('express');
 const router = express.Router();
 const Assignment = require('../models/assignment');
+const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 
+// Middleware to ensure user is authenticated
 function ensureAuthenticated(req, res, next) {
-  if (req.isAuthenticated()) return next();
-  req.flash('error_msg', 'Please log in');
+  if (req.user) return next();
   res.redirect('/login');
 }
 
+// Dashboard route - list user's assignments
 router.get('/dashboard', ensureAuthenticated, async (req, res) => {
-  if (!res.locals.dbConnected) return res.render('dashboard', { assignments: [] });
   try {
-    let assignments = await Assignment.find({ user: req.user.id });
-    // Format dueDate for each assignment
-    assignments = assignments.map(assignment => {
-      assignment.dueDateFormatted = assignment.dueDate
-        ? new Date(assignment.dueDate).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-          })
-        : 'N/A';
-      return assignment;
-    });
+    const query = req.query.search ? { user: req.user.id, title: { $regex: req.query.search, $options: 'i' } } : { user: req.user.id };
+    const assignments = await Assignment.find(query);
+    console.log(assignments); // Debug fetched assignments
     res.render('dashboard', { assignments });
   } catch (err) {
-    console.error('Dashboard error:', err);
-    req.flash('error_msg', 'Database error');
-    res.render('dashboard', { assignments: [] });
+    console.error(err);
+    res.status(500).send('Server Error');
   }
 });
 
-router.get('/add', ensureAuthenticated, (req, res) => res.render('add'));
+// Add assignment form
+router.get('/add', ensureAuthenticated, (req, res) => {
+  res.render('add');
+});
 
+// Add assignment
 router.post('/add', ensureAuthenticated, async (req, res) => {
-  if (!res.locals.dbConnected) {
-    req.flash('error_msg', 'Database unavailable');
-    return res.redirect('/add');
-  }
-  const { title, dueDate, priority, category, progress } = req.body;
   try {
-    const assignment = new Assignment({ user: req.user.id, title, dueDate, priority, category, progress, notified: false });
+    console.log(req.body); // Debug form data
+    const assignment = new Assignment({
+      user: req.user.id,
+      title: req.body.title,
+      dueDate: req.body.dueDate,
+      priority: req.body.priority,
+      category: req.body.category,
+      weight: Number(req.body.weight) || 0, // Ensure weight is a number
+      completed: req.body.completed === 'on' // Set completion status
+    });
     await assignment.save();
-    req.flash('success_msg', 'Assignment added!');
+    req.flash('success_msg', 'Assignment added successfully');
     res.redirect('/dashboard');
   } catch (err) {
-    console.error('Add assignment error:', err);
-    req.flash('error_msg', 'Failed to add assignment');
-    res.redirect('/add');
+    console.error(err);
+    res.status(500).send('Server Error');
   }
 });
 
+// Edit assignment form
 router.get('/edit/:id', ensureAuthenticated, async (req, res) => {
-  if (!res.locals.dbConnected) return res.redirect('/dashboard');
   try {
     const assignment = await Assignment.findById(req.params.id);
-    if (!assignment || assignment.user.toString() !== req.user.id) {
-      req.flash('error_msg', 'Assignment not found or unauthorized');
-      return res.redirect('/dashboard');
-    }
+    if (assignment.user.toString() !== req.user.id) return res.status(403).send('Unauthorized');
     res.render('edit', { assignment });
   } catch (err) {
-    console.error('Edit error:', err);
-    res.redirect('/dashboard');
+    console.error(err);
+    res.status(500).send('Server Error');
   }
 });
 
+// Update assignment
 router.post('/edit/:id', ensureAuthenticated, async (req, res) => {
-  if (!res.locals.dbConnected) {
-    req.flash('error_msg', 'Database unavailable');
-    return res.redirect(`/edit/${req.params.id}`);
-  }
-  const { title, dueDate, priority, category, progress } = req.body;
   try {
+    console.log(req.body); // Debug form data
     const assignment = await Assignment.findById(req.params.id);
-    if (!assignment || assignment.user.toString() !== req.user.id) {
-      req.flash('error_msg', 'Assignment not found or unauthorized');
-      return res.redirect('/dashboard');
-    }
-    await Assignment.findByIdAndUpdate(req.params.id, { title, dueDate, priority, category, progress });
-    req.flash('success_msg', 'Assignment updated!');
+    if (assignment.user.toString() !== req.user.id) return res.status(403).send('Unauthorized');
+    assignment.title = req.body.title;
+    assignment.dueDate = req.body.dueDate;
+    assignment.priority = req.body.priority;
+    assignment.category = req.body.category;
+    assignment.weight = Number(req.body.weight) || 0; // Ensure weight is a number
+    assignment.completed = req.body.completed === 'on'; // Update completion status
+    await assignment.save();
+    req.flash('success_msg', 'Assignment updated successfully');
     res.redirect('/dashboard');
   } catch (err) {
-    console.error('Update error:', err);
-    req.flash('error_msg', 'Failed to update assignment');
-    res.redirect(`/edit/${req.params.id}`);
+    console.error(err);
+    res.status(500).send('Server Error');
   }
 });
 
-router.post('/delete/:id', ensureAuthenticated, async (req, res) => {
-  if (!res.locals.dbConnected) return res.redirect('/dashboard');
+// Delete assignment
+router.get('/delete/:id', ensureAuthenticated, async (req, res) => {
   try {
     const assignment = await Assignment.findById(req.params.id);
-    if (!assignment || assignment.user.toString() !== req.user.id) {
-      req.flash('error_msg', 'Assignment not found or unauthorized');
-      return res.redirect('/dashboard');
-    }
-    await Assignment.findByIdAndDelete(req.params.id);
-    req.flash('success_msg', 'Assignment deleted!');
+    if (assignment.user.toString() !== req.user.id) return res.status(403).send('Unauthorized');
+    await assignment.remove();
+    req.flash('success_msg', 'Assignment deleted successfully');
     res.redirect('/dashboard');
   } catch (err) {
-    console.error('Delete error:', err);
-    res.redirect('/dashboard');
+    console.error(err);
+    res.status(500).send('Server Error');
+  }
+});
+
+// Export assignments to CSV
+router.get('/export', ensureAuthenticated, async (req, res) => {
+  try {
+    const assignments = await Assignment.find({ user: req.user.id });
+    const csvWriter = createCsvWriter({
+      path: 'assignments.csv',
+      header: [
+        { id: 'title', title: 'Title' },
+        { id: 'dueDate', title: 'Due Date' },
+        { id: 'priority', title: 'Priority' },
+        { id: 'category', title: 'Category' },
+        { id: 'weight', title: 'Weight' },
+        { id: 'completed', title: 'Completed' }
+      ]
+    });
+    await csvWriter.writeRecords(assignments.map(a => ({
+      title: a.title,
+      dueDate: new Date(a.dueDate).toLocaleDateString(),
+      priority: a.priority,
+      category: a.category,
+      weight: a.weight,
+      completed: a.completed ? 'Yes' : 'No'
+    })));
+    res.download('assignments.csv');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server Error');
   }
 });
 

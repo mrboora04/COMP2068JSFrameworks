@@ -1,10 +1,4 @@
-/* Reset and Base Styles */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
+/* Custom Styles to Complement Bootstrap */
 body {
   font-family: 'Roboto', sans-serif;
   background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
@@ -13,20 +7,16 @@ body {
   overflow-x: hidden;
 }
 
-/* Container */
-.container {
-  display: flex;
-  min-height: 100vh;
-}
-
 /* Sidebar */
 .sidebar {
-  width: 250px;
-  padding: 20px;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   border-right: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+  padding: 20px;
+  height: 100vh;
+  position: sticky;
+  top: 0;
 }
 
 .sidebar h3 {
@@ -39,8 +29,6 @@ body {
 
 .sidebar p, .sidebar a {
   color: #e0e0e0;
-  text-decoration: none;
-  margin: 10px 0;
   transition: color 0.3s ease;
 }
 
@@ -48,81 +36,18 @@ body {
   color: #00ffcc;
 }
 
-.sidebar nav a {
-  display: inline-block;
-  margin-right: 10px;
-  padding: 5px 10px;
-  border-radius: 5px;
-  background: rgba(0, 255, 204, 0.1);
-  transition: background 0.3s ease, transform 0.3s ease;
-}
-
-.sidebar nav a:hover {
-  background: rgba(0, 255, 204, 0.3);
-  transform: translateY(-2px);
-}
-
 /* Content */
 .content {
-  flex-grow: 1;
   padding: 30px;
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(5px);
 }
 
-h2 {
+h1, h2, h3 {
   font-family: 'Orbitron', sans-serif;
   color: #00ffcc;
-  margin-bottom: 20px;
   text-transform: uppercase;
   letter-spacing: 1px;
-}
-
-/* Action Links */
-.action-links a {
-  color: #00ffcc;
-  text-decoration: none;
-  margin-right: 15px;
-  transition: color 0.3s ease;
-}
-
-.action-links a:hover {
-  color: #ff00ff;
-}
-
-/* Table (Dashboard) */
-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  margin-top: 20px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 0 20px rgba(0, 255, 255, 0.1);
-}
-
-th, td {
-  padding: 12px 15px;
-  text-align: left;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-th {
-  background: rgba(0, 255, 204, 0.2);
-  color: #00ffcc;
-  font-family: 'Orbitron', sans-serif;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-td {
-  color: #e0e0e0;
-}
-
-tr:hover {
-  background: rgba(0, 255, 204, 0.1);
-  transition: background 0.3s ease;
 }
 
 /* Priority Styles */
@@ -149,33 +74,6 @@ tr:hover {
   background: #ff3333;
   color: #fff;
   clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-}
-
-/* Action Links and Buttons in Table */
-td a {
-  color: #00ffcc;
-  text-decoration: none;
-  margin-right: 10px;
-  transition: color 0.3s ease;
-}
-
-td a:hover {
-  color: #ff00ff;
-}
-
-.delete-btn {
-  background: rgba(255, 51, 51, 0.2);
-  border: none;
-  color: #ff3333;
-  padding: 5px 10px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background 0.3s ease, transform 0.3s ease;
-}
-
-.delete-btn:hover {
-  background: rgba(255, 51, 51, 0.4);
-  transform: translateY(-2px);
 }
 
 /* Timeline (Calendar) */
@@ -217,22 +115,6 @@ td a:hover {
   margin-bottom: 5px;
 }
 
-.timeline-content {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 15px;
-  border-radius: 5px;
-  box-shadow: 0 0 10px rgba(0, 255, 255, 0.1);
-}
-
-.timeline-content h3 {
-  color: #e0e0e0;
-  margin-bottom: 5px;
-}
-
-.timeline-content p {
-  margin: 5px 0;
-}
-
 /* Popup for Calendar */
 .priority-popup {
   display: none;
@@ -261,19 +143,9 @@ td a:hover {
   height: 100px;
 }
 
-/* Messages */
-.success {
-  color: #00ff00;
-  background: rgba(0, 255, 0, 0.1);
-  padding: 10px;
-  border-radius: 5px;
-  margin-bottom: 20px;
-}
-
-.error {
-  color: #ff3333;
-  background: rgba(255, 51, 51, 0.1);
-  padding: 10px;
-  border-radius: 5px;
-  margin-bottom: 20px;
+/* Footer */
+footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 10px 0;
+  color: #e0e0e0;
 }

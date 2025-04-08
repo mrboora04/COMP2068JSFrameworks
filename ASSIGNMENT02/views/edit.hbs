@@ -1,22 +1,38 @@
-<h2>Edit Assignment</h2>
+<h1>Edit Assignment</h1>
 <form method="POST" action="/edit/{{assignment._id}}">
-  <label>Title: <input type="text" name="title" value="{{assignment.title}}" required></label>
-  <label>Due Date: <input type="date" name="dueDate" value="{{assignment.dueDate}}" required></label>
-  <label>Priority: 
-    <select name="priority">
-      <option value="Low" {{#if (eq assignment.priority "Low")}}selected{{/if}}>Low</option>
-      <option value="Medium" {{#if (eq assignment.priority "Medium")}}selected{{/if}}>Medium</option>
-      <option value="High" {{#if (eq assignment.priority "High")}}selected{{/if}}>High</option>
+  <div class="mb-3">
+    <label for="title" class="form-label">Title</label>
+    <input type="text" class="form-control" id="title" name="title" value="{{assignment.title}}" required>
+  </div>
+  <div class="mb-3">
+    <label for="dueDate" class="form-label">Due Date</label>
+    <input type="date" class="form-control" id="dueDate" name="dueDate" value="{{formatDate assignment.dueDate 'YYYY-MM-DD'}}" required>
+  </div>
+  <div class="mb-3">
+    <label for="priority" class="form-label">Priority</label>
+    <select class="form-select" id="priority" name="priority">
+      <option value="Low" {{#if (eq assignment.priority 'Low')}}selected{{/if}}>Low</option>
+      <option value="Medium" {{#if (eq assignment.priority 'Medium')}}selected{{/if}}>Medium</option>
+      <option value="High" {{#if (eq assignment.priority 'High')}}selected{{/if}}>High</option>
     </select>
-  </label>
-  <label>Category: 
-    <select name="category">
-      <option value="Coding" {{#if (eq assignment.category "Coding")}}selected{{/if}}>Coding</option>
-      <option value="Math" {{#if (eq assignment.category "Math")}}selected{{/if}}>Math</option>
-      <option value="Writing" {{#if (eq assignment.category "Writing")}}selected{{/if}}>Writing</option>
-      <option value="Other" {{#if (eq assignment.category "Other")}}selected{{/if}}>Other</option>
+  </div>
+  <div class="mb-3">
+    <label for="category" class="form-label">Category</label>
+    <select class="form-select" id="category" name="category">
+      <option value="Coding" {{#if (eq assignment.category 'Coding')}}selected{{/if}}>Coding</option>
+      <option value="Math" {{#if (eq assignment.category 'Math')}}selected{{/if}}>Math</option>
+      <option value="Writing" {{#if (eq assignment.category 'Writing')}}selected{{/if}}>Writing</option>
+      <option value="Other" {{#if (eq assignment.category 'Other')}}selected{{/if}}>Other</option>
     </select>
-  </label>
-  <label>Progress (%): <input type="number" name="progress" min="0" max="100" value="{{assignment.progress}}"></label>
-  <button type="submit">Save</button>
+  </div>
+  <div class="mb-3">
+    <label for="weight" class="form-label">Weight (%)</label>
+    <input type="number" class="form-control" id="weight" name="weight" min="0" max="100" value="{{assignment.weight}}" required>
+  </div>
+  <div class="mb-3 form-check">
+    <input type="checkbox" class="form-check-input" id="completed" name="completed" {{#if assignment.completed}}checked{{/if}}>
+    <label for="completed" class="form-check-label">Completed</label>
+  </div>
+  <button type="submit" class="btn btn-primary">Update Assignment</button>
+  <a href="/dashboard" class="btn btn-secondary">Cancel</a>
 </form>

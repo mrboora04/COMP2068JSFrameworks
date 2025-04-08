@@ -1,22 +1,38 @@
-<h2>Add Assignment</h2>
+<h1>Add Assignment</h1>
 <form method="POST" action="/add">
-  <label>Title: <input type="text" name="title" required></label>
-  <label>Due Date: <input type="date" name="dueDate" required></label>
-  <label>Priority: 
-    <select name="priority">
+  <div class="mb-3">
+    <label for="title" class="form-label">Title</label>
+    <input type="text" class="form-control" id="title" name="title" required>
+  </div>
+  <div class="mb-3">
+    <label for="dueDate" class="form-label">Due Date</label>
+    <input type="date" class="form-control" id="dueDate" name="dueDate" required>
+  </div>
+  <div class="mb-3">
+    <label for="priority" class="form-label">Priority</label>
+    <select class="form-select" id="priority" name="priority">
       <option value="Low">Low</option>
-      <option value="Medium">Medium</option>
+      <option value="Medium" selected>Medium</option>
       <option value="High">High</option>
     </select>
-  </label>
-  <label>Category: 
-    <select name="category">
-      <option value="Coding">Coding</option>
+  </div>
+  <div class="mb-3">
+    <label for="category" class="form-label">Category</label>
+    <select class="form-select" id="category" name="category">
+      <option value="Coding" selected>Coding</option>
       <option value="Math">Math</option>
       <option value="Writing">Writing</option>
       <option value="Other">Other</option>
     </select>
-  </label>
-  <label>Progress (%): <input type="number" name="progress" min="0" max="100" value="0"></label>
-  <button type="submit">Add</button>
+  </div>
+  <div class="mb-3">
+    <label for="weight" class="form-label">Weight (%)</label>
+    <input type="number" class="form-control" id="weight" name="weight" min="0" max="100" value="0" required>
+  </div>
+  <div class="mb-3 form-check">
+    <input type="checkbox" class="form-check-input" id="completed" name="completed">
+    <label for="completed" class="form-check-label">Completed</label>
+  </div>
+  <button type="submit" class="btn btn-primary">Add Assignment</button>
+  <a href="/dashboard" class="btn btn-secondary">Cancel</a>
 </form>

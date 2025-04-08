@@ -1,6 +1,17 @@
-<h2>Login</h2>
-<form method="POST" action="/login">
-  <label>Email: <input type="email" name="email" required></label>
-  <label>Password: <input type="password" name="password" required></label>
-  <button type="submit">Login</button>
-</form>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+</head>
+<body>
+  <div class="container mt-5">
+    <h1>Login</h1>
+    {{#if error_msg}}
+      <div class="alert alert-danger">{{error_msg}}</div>
+    {{/if}}
+    <a href="/auth/github" class="btn btn-primary">Login with GitHub</a>
+  </div>
+</body>
+</html>
