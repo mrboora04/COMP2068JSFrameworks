@@ -3,6 +3,7 @@ const router = express.Router();
 const Assignment = require('../models/assignment');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 
+
 function ensureAuthenticated(req, res, next) {
   if (req.user) return next();
   res.redirect('/login');
@@ -179,6 +180,10 @@ router.get('/export', ensureAuthenticated, async (req, res) => {
     console.error(err);
     res.status(500).send('Server Error');
   }
+});
+
+router.get('/assignments', (req, res) => {
+  res.send('Assignments route placeholder');
 });
 
 module.exports = router;
