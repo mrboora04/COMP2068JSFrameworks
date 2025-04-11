@@ -15,7 +15,7 @@ const exphbs = require('express-handlebars');
 const Assignment = require('./models/assignment');
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/user');
-const assignmentsRouter = require('./routes/assignment');
+// const assignmentsRouter = require('./routes/assignment');
 
 // Initialize Express app
 const app = express();
@@ -97,7 +97,7 @@ app.use((req, res, next) => {
 // Routes
 app.use('/', indexRouter);
 app.use('/', usersRouter);
-app.use('/', assignmentsRouter);
+// app.use('/', assignmentsRouter);
 
 // 404 error handler
 app.use((req, res, next) => {
