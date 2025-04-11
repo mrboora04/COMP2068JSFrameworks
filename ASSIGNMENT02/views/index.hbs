@@ -1,22 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Coding Assignment Tracker</title>
-  <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
-</head>
-<body>
-  <div class="container mt-5">
-    <h1>Welcome to the Coding Assignment Tracker</h1>
-    <p>Manage your assignments efficiently.</p>
-    {{#if user}}
-      <a href="/dashboard" class="btn btn-primary">Go to Dashboard</a>
-      <a href="/calendar" class="btn btn-secondary">View Calendar</a>
-      <a href="/logout" class="btn btn-danger">Logout</a>
-    {{else}}
-      <a href="/login" class="btn btn-primary">Login with GitHub</a>
-    {{/if}}
-    <a href="/public" class="btn btn-info mt-3">View Public Assignments</a>
-  </div>
-</body>
-</html>
+<div class="hero-section text-center">
+  <h1>Welcome to Assignment Tracker</h1>
+  <p>Organize and track your assignments.</p>
+  <a href="/auth/github" class="btn btn-primary">Login with GitHub</a>
+</div>

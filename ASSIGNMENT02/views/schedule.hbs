@@ -1,0 +1,19 @@
+<h1>Schedule</h1>
+{{#if assignments.length}}
+  <div class="timeline">
+    {{#each assignments}}
+      <div class="timeline-item">
+        <div class="card {{urgencyClass dueDate}}">
+          <div class="card-body">
+            <h5>{{title}}</h5>
+            <p><strong>Due:</strong> {{formatDate dueDate}}</p>
+            <p><strong>Status:</strong> {{#if completed}}Completed{{else}}Incomplete{{/if}}</p>
+          </div>
+        </div>
+      </div>
+    {{/each}}
+  </div>
+{{else}}
+  <div class="alert alert-info">No assignments found.</div>
+{{/if}}
+<a href="/dashboard" class="btn btn-primary mt-3">Back to Dashboard</a>

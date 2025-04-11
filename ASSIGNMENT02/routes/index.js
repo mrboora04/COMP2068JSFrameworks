@@ -24,27 +24,18 @@ router.get('/calendar', async (req, res, next) => {
   }
 });
 
-// Public route - displays all assignments
-router.get('/public', async (req, res, next) => {
-  try {
-    const assignments = await Assignment.find();
-    res.render('public', { assignments, title: 'Public Assignments' });
-  } catch (err) {
-    next(err);
-  }
-});
-
 // Add to-do to an assignment in the calendar
 router.post('/calendar/:id/add-todo', async (req, res) => {
   if (!req.user) return res.redirect('/login');
   try {
     const assignment = await Assignment.findById(req.params.id);
-    if (assignment.user.toString() !== req.user.id) return res.status(403).send('Unauthorized');
+    if (assignment.user.toString() !== req.user.id) return res.status(403).render('error', { message: 'Unauthorized' });
     assignment.todos.push({ task: req.body.task });
     await assignment.save();
+    req.flash('success_msg', 'To-do added successfully');
     res.redirect('/calendar');
   } catch (err) {
-    res.status(500).send('Server Error');
+    res.status(500).render('error', { message: 'Server Error' });
   }
 });
 

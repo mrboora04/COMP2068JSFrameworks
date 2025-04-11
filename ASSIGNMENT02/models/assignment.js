@@ -8,10 +8,13 @@ const AssignmentSchema = new Schema({
   dueDate: { type: Date, required: true },
   priority: { type: String, enum: ['Low', 'Medium', 'High'], default: 'Medium' },
   category: { type: String, enum: ['Coding', 'Math', 'Writing', 'Other'], default: 'Coding' },
-  weight: { type: Number, min: 0, max: 100, default: 0 }, // Renamed from progress
+  weight: { type: Number, min: 0, max: 100, default: 0 },
   notified: { type: Boolean, default: false },
   todos: [{ task: String, completed: { type: Boolean, default: false } }],
-  completed: { type: Boolean, default: false } // Tracks if assignment is complete
+  completed: { type: Boolean, default: false },
+  notify: { type: Boolean, default: true },
+  customMessage: { type: String, default: '' },
+  course: { type: String, default: 'General' }
 });
 
 module.exports = mongoose.model('Assignment', AssignmentSchema);

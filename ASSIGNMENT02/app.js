@@ -8,8 +8,7 @@ const session = require('express-session');
 const passport = require('passport');
 const flash = require('connect-flash');
 const mongoose = require('mongoose');
-mongoose.set('strictQuery', false); // Suppress strictQuery deprecation warning
-const transporter = require('./config/email');
+mongoose.set('strictQuery', false);
 
 // Import routes
 const indexRouter = require('./routes/index');
@@ -25,7 +24,7 @@ require('./config/passport')(passport);
 const hbs = require('hbs');
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
-hbs.registerPartials(path.join(__dirname, 'views/partials'));
+
 
 // Handlebars helpers
 hbs.registerHelper('formatDate', function(date, format) {
@@ -94,36 +93,17 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500);
   res.render('error');
 });
+app.get('/stylesheets/style.css', (req, res) => {
+  res.setHeader('Content-Type', 'text/css');
+  res.sendFile(path.join(__dirname, 'public', 'stylesheets', 'style.css'), (err) => {
+    if (err) res.status(404).send('CSS not found');
+  });
+});
 
-// Connect to MongoDB and set up email reminders
+// Connect to MongoDB
 const connectDB = require('./config/db');
 connectDB().then(() => {
   console.log('Database connected successfully');
-  setInterval(async () => {
-    if (mongoose.connection.readyState !== 1) return;
-    try {
-      const Assignment = require('./models/assignment');
-      const assignments = await Assignment.find({
-        dueDate: { $lte: new Date(Date.now() + 24 * 60 * 60 * 1000) },
-        notified: { $ne: true },
-        completed: false // Only notify for incomplete assignments
-      });
-      for (const assignment of assignments) {
-        const user = await require('./models/user').findById(assignment.user);
-        if (!user) continue;
-        await transporter.sendMail({
-          from: process.env.EMAIL_USER,
-          to: user.email,
-          subject: `Reminder: ${assignment.title} Due Soon!`,
-          text: `Weight: ${assignment.weight}%. Due on ${new Date(assignment.dueDate).toLocaleDateString()}. Priority: ${assignment.priority}.`
-        });
-        assignment.notified = true;
-        await assignment.save();
-      }
-    } catch (err) {
-      console.error('Email reminder error:', err);
-    }
-  }, 60 * 60 * 1000);
 }).catch(err => {
   console.error('MongoDB failed to connect, running in limited mode:', err);
 });
