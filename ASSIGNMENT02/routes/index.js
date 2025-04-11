@@ -2,40 +2,54 @@ const express = require('express');
 const router = express.Router();
 const Assignment = require('../models/assignment');
 
-// Homepage route - renders the welcome page
 router.get('/', (req, res) => {
-  res.render('index', { title: 'Coding Assignment Tracker' });
+  res.render('index');
 });
 
-// Calendar route - displays user's assignments with upcoming deadlines
-router.get('/calendar', async (req, res, next) => {
+router.get('/calendar', async (req, res) => {
   if (!req.user) return res.redirect('/login');
   try {
     const now = new Date();
-    const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
     const upcomingAssignments = await Assignment.find({
       user: req.user.id,
-      dueDate: { $gte: now, $lte: nextWeek }
+      dueDate: { $gte: today, $lte: nextWeek },
+      completed: false
     }).sort({ dueDate: 1 });
-    const allAssignments = await Assignment.find({ user: req.user.id });
-    res.render('calendar', { upcomingAssignments, allAssignments });
-  } catch (err) {
-    next(err);
-  }
-});
 
-// Add to-do to an assignment in the calendar
-router.post('/calendar/:id/add-todo', async (req, res) => {
-  if (!req.user) return res.redirect('/login');
-  try {
-    const assignment = await Assignment.findById(req.params.id);
-    if (assignment.user.toString() !== req.user.id) return res.status(403).render('error', { message: 'Unauthorized' });
-    assignment.todos.push({ task: req.body.task });
-    await assignment.save();
-    req.flash('success_msg', 'To-do added successfully');
-    res.redirect('/calendar');
+    const allAssignments = await Assignment.find({ user: req.user.id }).sort({ dueDate: 1 });
+
+    const groupedUpcoming = {};
+    upcomingAssignments.forEach(a => {
+      const course = a.course || 'General';
+      if (!groupedUpcoming[course]) groupedUpcoming[course] = [];
+      groupedUpcoming[course].push(a);
+    });
+
+    const formattedUpcoming = Object.keys(groupedUpcoming).map(course => ({
+      course,
+      assignments: groupedUpcoming[course],
+      isMultiple: groupedUpcoming[course].length > 1
+    }));
+
+    const groupedAll = {};
+    allAssignments.forEach(a => {
+      const course = a.course || 'General';
+      if (!groupedAll[course]) groupedAll[course] = [];
+      groupedAll[course].push(a);
+    });
+
+    const formattedAll = Object.keys(groupedAll).map(course => ({
+      course,
+      assignments: groupedAll[course],
+      isMultiple: groupedAll[course].length > 1
+    }));
+
+    res.render('calendar', { upcomingAssignments: formattedUpcoming, allAssignments: formattedAll });
   } catch (err) {
-    res.status(500).render('error', { message: 'Server Error' });
+    console.error(err);
+    res.status(500).send('Server Error');
   }
 });
 

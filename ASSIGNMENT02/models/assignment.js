@@ -1,20 +1,16 @@
 const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
 
-// Assignment schema
-const AssignmentSchema = new Schema({
-  user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+const assignmentSchema = new mongoose.Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   title: { type: String, required: true },
   dueDate: { type: Date, required: true },
   priority: { type: String, enum: ['Low', 'Medium', 'High'], default: 'Medium' },
-  category: { type: String, enum: ['Coding', 'Math', 'Writing', 'Other'], default: 'Coding' },
-  weight: { type: Number, min: 0, max: 100, default: 0 },
-  notified: { type: Boolean, default: false },
-  todos: [{ task: String, completed: { type: Boolean, default: false } }],
+  category: { type: String },
+  weight: { type: Number, default: 0 },
   completed: { type: Boolean, default: false },
   notify: { type: Boolean, default: true },
-  customMessage: { type: String, default: '' },
-  course: { type: String, default: 'General' }
+  customMessage: { type: String },
+  course: { type: String }
 });
 
-module.exports = mongoose.model('Assignment', AssignmentSchema);
+module.exports = mongoose.model('Assignment', assignmentSchema);

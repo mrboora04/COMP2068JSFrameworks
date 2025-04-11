@@ -3,92 +3,103 @@ const router = express.Router();
 const Assignment = require('../models/assignment');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 
-// Middleware to ensure user is authenticated
 function ensureAuthenticated(req, res, next) {
   if (req.user) return next();
   res.redirect('/login');
 }
 
-// Dashboard route - list user's assignments
+function groupByCourse(assignments) {
+  return assignments.reduce((acc, assignment) => {
+    const course = assignment.course || 'General';
+    if (!acc[course]) acc[course] = [];
+    acc[course].push(assignment);
+    return acc;
+  }, {});
+}
+
+function formatAssignments(groupedAssignments) {
+  return Object.keys(groupedAssignments).map(course => ({
+    course,
+    assignments: groupedAssignments[course],
+    isMultiple: groupedAssignments[course].length > 1
+  }));
+}
+
 router.get('/dashboard', ensureAuthenticated, async (req, res) => {
   try {
-    console.log('Logged-in User ID:', req.user.id);
-    const allAssignments = await Assignment.find({ user: req.user.id });
-    console.log('All Assignments for User:', allAssignments);
-    let debugMessage = allAssignments.length === 0 ? 'No assignments found for this user in the database.' : '';
+    const allAssignments = await Assignment.find({ user: req.user.id }).lean();
     const incompleteAssignments = allAssignments.filter(a => !a.completed);
     const completedAssignments = allAssignments.filter(a => a.completed);
-    console.log('Incomplete Assignments (completed: false):', incompleteAssignments);
-    console.log('Completed Assignments (completed: true):', completedAssignments);
 
-    const groupedIncomplete = {};
-    incompleteAssignments.forEach(a => {
-      const course = a.course || 'General';
-      if (!groupedIncomplete[course]) {
-        groupedIncomplete[course] = [];
-      }
-      groupedIncomplete[course].push(a);
-    });
+    const groupedIncomplete = groupByCourse(incompleteAssignments);
+    const groupedCompleted = groupByCourse(completedAssignments);
 
-    const groupedCompleted = {};
-    completedAssignments.forEach(a => {
-      const course = a.course || 'General';
-      if (!groupedCompleted[course]) {
-        groupedCompleted[course] = [];
-      }
-      groupedCompleted[course].push(a);
-    });
+    const formattedIncomplete = formatAssignments(groupedIncomplete);
+    const formattedCompleted = formatAssignments(groupedCompleted);
 
-    const formattedIncomplete = Object.keys(groupedIncomplete).map(course => ({
-      course,
-      assignments: groupedIncomplete[course],
-      isMultiple: groupedIncomplete[course].length > 1
-    }));
-
-    const formattedCompleted = Object.keys(groupedCompleted).map(course => ({
-      course,
-      assignments: groupedCompleted[course],
-      isMultiple: groupedCompleted[course].length > 1
-    }));
-
-    res.render('dashboard', { incomplete: formattedIncomplete, completed: formattedCompleted, debugMessage });
+    res.render('dashboard', { incomplete: formattedIncomplete, completed: formattedCompleted });
   } catch (err) {
-    console.error(err);
+    console.error('Error fetching assignments:', err);
     res.status(500).send('Server Error');
   }
 });
 
-// Add assignment form
+router.get('/calender', ensureAuthenticated, async (req, res) => {
+  try {
+    const allAssignments = await Assignment.find({ user: req.user.id }).lean();
+    const today = new Date();
+    const nextWeek = new Date();
+    nextWeek.setDate(today.getDate() + 7);
+
+    const upcoming = allAssignments.filter(a => {
+      const due = new Date(a.dueDate);
+      return due >= today && due <= nextWeek && !a.completed;
+    });
+
+    const groupedUpcoming = groupByCourse(upcoming);
+    const groupedAll = groupByCourse(allAssignments);
+
+    const formattedUpcoming = formatAssignments(groupedUpcoming);
+    const formattedAll = formatAssignments(groupedAll);
+
+    res.render('calender', { upcomingAssignments: formattedUpcoming, allAssignments: formattedAll });
+  } catch (err) {
+    console.error('Error loading calendar:', err);
+    res.status(500).send('Server Error');
+  }
+});
+
 router.get('/add', ensureAuthenticated, (req, res) => {
   res.render('add');
 });
 
-// Add assignment
 router.post('/add', ensureAuthenticated, async (req, res) => {
   try {
-    console.log(req.body);
-    const assignment = new Assignment({
+    const { title, course, dueDate, priority, category, weight, completed, notify, customMessage } = req.body;
+
+    const newAssignment = new Assignment({
       user: req.user.id,
-      title: req.body.title,
-      dueDate: req.body.dueDate,
-      priority: req.body.priority,
-      category: req.body.category,
-      weight: Number(req.body.weight) || 0,
-      completed: req.body.completed === 'on',
-      notify: req.body.notify === 'on',
-      customMessage: req.body.customMessage || '',
-      course: req.body.course || 'General'
+      title,
+      course,
+      dueDate,
+      priority,
+      category,
+      weight: weight || 0,
+      completed: completed === 'on',
+      notify: notify === 'on',
+      customMessage
     });
-    await assignment.save();
+
+    await newAssignment.save();
     req.flash('success_msg', 'Assignment added successfully');
     res.redirect('/dashboard');
   } catch (err) {
-    console.error(err);
-    res.status(500).send('Server Error');
+    console.error('Error adding assignment:', err);
+    req.flash('error_msg', 'Failed to add assignment');
+    res.redirect('/add');
   }
 });
 
-// Edit assignment form
 router.get('/edit/:id', ensureAuthenticated, async (req, res) => {
   try {
     const assignment = await Assignment.findById(req.params.id);
@@ -100,12 +111,11 @@ router.get('/edit/:id', ensureAuthenticated, async (req, res) => {
   }
 });
 
-// Update assignment
 router.post('/edit/:id', ensureAuthenticated, async (req, res) => {
   try {
-    console.log(req.body);
     const assignment = await Assignment.findById(req.params.id);
     if (assignment.user.toString() !== req.user.id) return res.status(403).send('Unauthorized');
+
     assignment.title = req.body.title;
     assignment.dueDate = req.body.dueDate;
     assignment.priority = req.body.priority;
@@ -115,16 +125,16 @@ router.post('/edit/:id', ensureAuthenticated, async (req, res) => {
     assignment.notify = req.body.notify === 'on';
     assignment.customMessage = req.body.customMessage || '';
     assignment.course = req.body.course || 'General';
+
     await assignment.save();
     req.flash('success_msg', 'Assignment updated successfully');
-    res.redirect('/dashboard');
+    res.redirect('/calender');
   } catch (err) {
     console.error(err);
     res.status(500).send('Server Error');
   }
 });
 
-// Delete assignment
 router.get('/delete/:id', ensureAuthenticated, async (req, res) => {
   try {
     const assignment = await Assignment.findById(req.params.id);
@@ -138,7 +148,6 @@ router.get('/delete/:id', ensureAuthenticated, async (req, res) => {
   }
 });
 
-// Export assignments to CSV
 router.get('/export', ensureAuthenticated, async (req, res) => {
   try {
     const assignments = await Assignment.find({ user: req.user.id });
@@ -166,24 +175,6 @@ router.get('/export', ensureAuthenticated, async (req, res) => {
       course: a.course
     })));
     res.download('assignments.csv');
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Server Error');
-  }
-});
-
-// Schedule route - plan assignments for the week
-router.get('/schedule', ensureAuthenticated, async (req, res) => {
-  try {
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
-    const assignments = await Assignment.find({
-      user: req.user.id,
-      dueDate: { $gte: today, $lte: nextWeek },
-      completed: false
-    }).sort({ dueDate: 1 });
-    res.render('schedule', { assignments });
   } catch (err) {
     console.error(err);
     res.status(500).send('Server Error');

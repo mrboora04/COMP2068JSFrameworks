@@ -1,49 +1,67 @@
-<h1>Calendar</h1>
-<h2>Upcoming (Next 7 Days)</h2>
+<h1 class="mb-4">Calendar</h1>
+
+<!-- Upcoming Assignments Section -->
+<h2 class="mt-4">Upcoming Assignments (Next 7 Days)</h2>
 {{#if upcomingAssignments.length}}
-  <div class="row">
+  <div class="todo-section p-3 mb-5 rounded" style="background-color: rgba(255, 235, 59, 0.1);">
     {{#each upcomingAssignments}}
-      <div class="col-md-4 mb-3">
-        <div class="card {{urgencyClass dueDate}}">
-          <div class="card-body">
-            <h5>{{title}}</h5>
-            <p><strong>Due:</strong> {{formatDate dueDate}}</p>
-            <p><strong>Days Left:</strong> {{daysUntilDue dueDate}}</p>
-            <ul class="list-group mb-2">
-              {{#each todos}}
-                <li class="list-group-item {{#if completed}}text-muted{{/if}}">{{task}}</li>
-              {{/each}}
-            </ul>
-            <form method="POST" action="/calendar/{{_id}}/add-todo" class="d-flex">
-              <input type="text" name="task" class="form-control me-2" placeholder="Add to-do" required>
-              <button type="submit" class="btn btn-primary btn-sm">Add</button>
-            </form>
-          </div>
-        </div>
-      </div>
+      <h3 class="mb-3">{{course}}{{#if isMultiple}} (Multiple Assignments){{/if}}</h3>
+      <ul class="list-group">
+        {{#each assignments}}
+          <li class="list-group-item d-flex justify-content-between align-items-center {{#if dueDate}}{{urgencyClass dueDate}}{{else}}safe{{/if}}">
+            <div>
+              <strong>{{title}}</strong> ({{course}})
+              <br>
+              <small>
+                Due: {{formatDate dueDate}} | 
+                Days Left: {{#if dueDate}}{{daysUntilDue dueDate}}{{else}}N/A{{/if}} | 
+                Priority: {{priority}}
+              </small>
+            </div>
+            <div class="d-flex gap-2">
+              <a href="/edit/{{_id}}" class="btn btn-outline-primary btn-sm">Edit</a>
+              <a href="/delete/{{_id}}" class="btn btn-outline-danger btn-sm">Delete</a>
+            </div>
+          </li>
+        {{/each}}
+      </ul>
     {{/each}}
   </div>
 {{else}}
-  <div class="alert alert-info">No upcoming assignments.</div>
+  <div class="alert alert-info">No upcoming assignments in the next 7 days.</div>
 {{/if}}
 
-<h2>All Assignments</h2>
+<!-- All Assignments Section -->
+<h2 class="mt-5">All Assignments</h2>
 {{#if allAssignments.length}}
-  <div class="row">
+  <div class="all-assignments-section p-3 rounded" style="background-color: rgba(0, 128, 128, 0.1);">
     {{#each allAssignments}}
-      <div class="col-md-4 mb-3">
-        <div class="card {{urgencyClass dueDate}}">
-          <div class="card-body">
-            <h5>{{title}}</h5>
-            <p><strong>Due:</strong> {{formatDate dueDate}}</p>
-            <a href="/edit/{{_id}}" class="btn btn-outline-primary btn-sm">Edit</a>
-          </div>
-        </div>
-      </div>
+      <h3 class="mb-3">{{course}}{{#if isMultiple}} (Multiple Assignments){{/if}}</h3>
+      <ul class="list-group">
+        {{#each assignments}}
+          <li class="list-group-item d-flex justify-content-between align-items-center {{#if dueDate}}{{urgencyClass dueDate}}{{else}}safe{{/if}}">
+            <div>
+              <strong>{{title}}</strong> ({{course}})
+              <br>
+              <small>
+                Due: {{formatDate dueDate}} | 
+                Priority: {{priority}} | 
+                Status: {{#if completed}}Completed{{else}}Incomplete{{/if}}
+              </small>
+            </div>
+            <div class="d-flex gap-2">
+              <a href="/edit/{{_id}}" class="btn btn-outline-primary">Edit</a>
+              <a href="/delete/{{_id}}" class="btn btn-outline-danger btn-sm">Delete</a>
+            </div>
+          </li>
+        {{/each}}
+      </ul>
     {{/each}}
   </div>
 {{else}}
   <div class="alert alert-info">No assignments found.</div>
 {{/if}}
 
-<a href="/dashboard" class="btn btn-primary mt-3">Back to Dashboard</a>
+<div class="mt-4">
+  <a href="/dashboard" class="btn btn-primary">Back to Dashboard</a>
+</div>

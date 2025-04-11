@@ -2,7 +2,6 @@ const passport = require('passport');
 const GitHubStrategy = require('passport-github2').Strategy;
 const User = require('../models/user');
 
-// Configure GitHub OAuth strategy
 module.exports = function(passport) {
   passport.use(new GitHubStrategy({
     clientID: process.env.GITHUB_CLIENT_ID,
@@ -26,12 +25,10 @@ module.exports = function(passport) {
     }
   }));
 
-  // Serialize user into the session
   passport.serializeUser((user, done) => {
     done(null, user.id);
   });
 
-  // Deserialize user from the session
   passport.deserializeUser(async (id, done) => {
     try {
       const user = await User.findById(id);

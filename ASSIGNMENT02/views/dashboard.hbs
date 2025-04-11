@@ -1,31 +1,27 @@
-<h1>Dashboard</h1>
-<p>Welcome, {{user.username}}!</p>
-
-{{#if debugMessage}}
-  <div class="alert alert-info">{{debugMessage}}</div>
-{{/if}}
-
-<div class="mb-4">
-  <a href="/export" class="btn btn-outline-primary me-2">Export to CSV</a>
+<h1 class="mb-4">Dashboard</h1>
+<div class="d-flex flex-wrap gap-2 mb-4">
   <a href="/add" class="btn btn-primary">Add Assignment</a>
+  <a href="/export" class="btn btn-primary">Export to CSV</a>
 </div>
 
-<h2>Incomplete Assignments</h2>
+<h2 class="mt-4">Incomplete Assignments</h2>
 {{#if incomplete.length}}
   {{#each incomplete}}
-    <h4>{{course}}</h4>
-    <div class="row">
+    <h3>{{course}}{{#if isMultiple}} (Multiple Assignments){{/if}}</h3>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
       {{#each assignments}}
-        <div class="col-md-4 mb-3">
-          <div class="card {{urgencyClass dueDate}}">
+        <div class="col">
+          <div class="card {{#if dueDate}}{{urgencyClass dueDate}}{{else}}safe{{/if}} h-100">
             <div class="card-body">
-              <h5>{{title}}</h5>
-              <p><strong>Due:</strong> {{formatDate dueDate}} ({{daysUntilDue dueDate}} days)</p>
-              <p><strong>Priority:</strong> {{priority}}</p>
-              <p><strong>Notify:</strong> {{#if notify}}Yes{{else}}No{{/if}}</p>
-              <p><strong>Status:</strong> Incomplete</p>
-              <a href="/edit/{{_id}}" class="btn btn-outline-primary btn-sm me-2">Edit</a>
-              <a href="/delete/{{_id}}" class="btn btn-outline-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</a>
+              <h5 class="card-title">{{title}}</h5>
+              <p class="card-text"><strong>Course:</strong> {{#if course}}{{course}}{{else}}N/A{{/if}}</p>
+              <p class="card-text"><strong>Due:</strong> {{#if dueDate}}{{formatDate dueDate}}{{else}}N/A{{/if}}</p>
+              <p class="card-text"><strong>Priority:</strong> {{#if priority}}{{priority}}{{else}}Medium{{/if}}</p>
+              <p class="card-text"><strong>Weight:</strong> {{#if weight}}{{weight}}%{{else}}0%{{/if}}</p>
+            </div>
+            <div class="card-footer d-flex gap-2 border-0 bg-transparent">
+              <a href="/edit/{{_id}}" class="btn btn-outline-primary">Edit</a>
+              <a href="/delete/{{_id}}" class="btn btn-outline-danger">Delete</a>
             </div>
           </div>
         </div>
@@ -36,22 +32,24 @@
   <div class="alert alert-info">No incomplete assignments.</div>
 {{/if}}
 
-<h2>Completed Assignments</h2>
+<h2 class="mt-5">Completed Assignments</h2>
 {{#if completed.length}}
   {{#each completed}}
-    <h4>{{course}}</h4>
-    <div class="row">
+    <h3>{{course}}{{#if isMultiple}} (Multiple Assignments){{/if}}</h3>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
       {{#each assignments}}
-        <div class="col-md-4 mb-3">
-          <div class="card {{urgencyClass dueDate}}">
+        <div class="col">
+          <div class="card h-100">
             <div class="card-body">
-              <h5>{{title}}</h5>
-              <p><strong>Due:</strong> {{formatDate dueDate}}</p>
-              <p><strong>Priority:</strong> {{priority}}</p>
-              <p><strong>Notify:</strong> {{#if notify}}Yes{{else}}No{{/if}}</p>
-              <p><strong>Status:</strong> Completed</p>
-              <a href="/edit/{{_id}}" class="btn btn-outline-primary btn-sm me-2">Edit</a>
-              <a href="/delete/{{_id}}" class="btn btn-outline-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</a>
+              <h5 class="card-title">{{title}}</h5>
+              <p class="card-text"><strong>Course:</strong> {{#if course}}{{course}}{{else}}N/A{{/if}}</p>
+              <p class="card-text"><strong>Due:</strong> {{#if dueDate}}{{formatDate dueDate}}{{else}}N/A{{/if}}</p>
+              <p class="card-text"><strong>Priority:</strong> {{#if priority}}{{priority}}{{else}}Medium{{/if}}</p>
+              <p class="card-text"><strong>Weight:</strong> {{#if weight}}{{weight}}%{{else}}0%{{/if}}</p>
+            </div>
+            <div class="card-footer d-flex gap-2 border-0 bg-transparent">
+              <a href="/edit/{{_id}}" class="btn btn-outline-primary">Edit</a>
+              <a href="/delete/{{_id}}" class="btn btn-outline-danger">Delete</a>
             </div>
           </div>
         </div>

@@ -8,49 +8,64 @@ const session = require('express-session');
 const passport = require('passport');
 const flash = require('connect-flash');
 const mongoose = require('mongoose');
-mongoose.set('strictQuery', false);
+const nodemailer = require('nodemailer');
+const exphbs = require('express-handlebars');
 
-// Import routes
+// Import models and routes
+const Assignment = require('./models/assignment');
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/user');
 const assignmentsRouter = require('./routes/assignment');
 
+// Initialize Express app
 const app = express();
 
-// Configure Passport for GitHub OAuth
+// Configure Passport
 require('./config/passport')(passport);
 
-// Set up Handlebars view engine
-const hbs = require('hbs');
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'hbs');
-
-
-// Handlebars helpers
-hbs.registerHelper('formatDate', function(date, format) {
-  if (!date) return 'N/A';
-  const d = new Date(date);
-  if (format === 'YYYY-MM-DD') {
-    return d.toISOString().split('T')[0];
+// Register Handlebars with helpers
+const hbs = exphbs.create({
+  extname: 'hbs',
+  defaultLayout: 'main',
+  layoutsDir: path.join(__dirname, 'views/layouts'),
+  helpers: {
+    formatDate: function (date, format) {
+      if (!date) return 'N/A';
+      const d = new Date(date);
+      if (format === 'YYYY-MM-DD') {
+        return d.toISOString().split('T')[0];
+      }
+      return d.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    },
+    eq: function (a, b) {
+      return a === b;
+    },
+    urgencyClass: function (dueDate) {
+      if (!dueDate) return 'bg-success text-white'; // Default class
+      const now = new Date();
+      const due = new Date(dueDate);
+      const diffDays = Math.ceil((due - now) / (1000 * 60 * 60 * 24));
+      if (diffDays < 2) return 'bg-danger text-white';
+      if (diffDays <= 5) return 'bg-warning';
+      return 'bg-success text-white';
+    },
+    daysUntilDue: function (dueDate) {
+      if (!dueDate) return 'N/A';
+      const now = new Date();
+      const due = new Date(dueDate);
+      return Math.ceil((due - now) / (1000 * 60 * 60 * 24));
+    }
   }
-  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 });
-hbs.registerHelper('eq', function(a, b) {
-  return a === b;
-});
-hbs.registerHelper('urgencyClass', function(dueDate) {
-  const now = new Date();
-  const due = new Date(dueDate);
-  const diffDays = Math.ceil((due - now) / (1000 * 60 * 60 * 24));
-  if (diffDays < 2) return 'urgent';
-  if (diffDays <= 5) return 'warning';
-  return 'safe';
-});
-hbs.registerHelper('daysUntilDue', function(dueDate) {
-  const now = new Date();
-  const due = new Date(dueDate);
-  return Math.ceil((due - now) / (1000 * 60 * 60 * 24));
-});
+
+// Set Handlebars as the view engine
+app.engine('hbs', hbs.engine);
+app.set('view engine', 'hbs');
+app.set('views', path.join(__dirname, 'views'));
 
 // Middleware setup
 app.use(logger('dev'));
@@ -59,12 +74,16 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/bootstrap', express.static(path.join(__dirname, 'node_modules/bootstrap/dist')));
-app.use(session({ secret: process.env.SESSION_SECRET, resave: false, saveUninitialized: false }));
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false
+}));
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
 
-// Global variables for templates
+// Global variables
 app.use((req, res, next) => {
   res.locals.success_msg = req.flash('success_msg');
   res.locals.error_msg = req.flash('error_msg');
@@ -75,7 +94,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Define routes
+// Routes
 app.use('/', indexRouter);
 app.use('/', usersRouter);
 app.use('/', assignmentsRouter);
@@ -93,19 +112,54 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500);
   res.render('error');
 });
-app.get('/stylesheets/style.css', (req, res) => {
-  res.setHeader('Content-Type', 'text/css');
-  res.sendFile(path.join(__dirname, 'public', 'stylesheets', 'style.css'), (err) => {
-    if (err) res.status(404).send('CSS not found');
-  });
-});
 
 // Connect to MongoDB
+mongoose.set('strictQuery', false);
 const connectDB = require('./config/db');
 connectDB().then(() => {
   console.log('Database connected successfully');
 }).catch(err => {
   console.error('MongoDB failed to connect, running in limited mode:', err);
 });
+
+// Email reminders setup
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
+
+async function sendEmailReminders() {
+  try {
+    const now = new Date();
+    const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+    const assignments = await Assignment.find({
+      dueDate: { $gte: now, $lte: tomorrow },
+      completed: false,
+      notify: true
+    }).populate('user');
+
+    for (const assignment of assignments) {
+      if (assignment.user && assignment.user.email) {
+        const mailOptions = {
+          from: process.env.EMAIL_USER,
+          to: assignment.user.email,
+          subject: `Reminder: Assignment "${assignment.title}" Due Soon`,
+          text: `Your assignment "${assignment.title}" is due on ${new Date(assignment.dueDate).toLocaleDateString()}. Don't forget to complete it!`
+        };
+        await transporter.sendMail(mailOptions);
+        console.log(`Reminder sent for assignment: ${assignment.title}`);
+      }
+    }
+  } catch (err) {
+    console.error('Error sending email reminders:', err);
+  }
+}
+
+// Schedule email reminders
+setInterval(sendEmailReminders, 60 * 60 * 1000); // every hour
 
 module.exports = app;

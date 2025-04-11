@@ -2,32 +2,167 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Coding Assignment Tracker</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Bootstrap Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
-  <link rel="stylesheet" href="/stylesheets/style.css?v=3">
+
   <style>
-    body { background-color: #212529; color: #f8f9fa; }
-    h1, h2, h3, h4, h5, h6 { color: #ff4d5a; }
-    a { color: #ff4d5a; }
-    a:hover { color: #20c997; }
-    .card { background-color: #343a40; border: none; }
-    .card:hover { transform: translateY(-3px); transition: transform 0.2s; }
-    .form-control { background-color: #495057; border-color: #6c757d; color: #f8f9fa; }
-    .form-control:focus { border-color: #20c997; box-shadow: 0 0 0 0.25rem rgba(32, 201, 151, 0.25); }
-    .timeline-item { position: relative; padding-left: 30px; margin-bottom: 20px; }
-    .timeline-item::before { content: ''; position: absolute; left: 10px; top: 0; bottom: 0; width: 2px; background: #20c997; }
-    .urgent { border-left: 3px solid #ff4d5a; }
-    .warning { border-left: 3px solid #ffc107; }
-    .safe { border-left: 3px solid #20c997; }
+    body {
+      background-color: #F0F4F8;
+      color: #333333;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .navbar {
+      background-color: #FFFFFF;
+      border-bottom: 1px solid #ddd;
+    }
+    .navbar-brand,
+    .nav-link {
+      color: #4D97FF !important;
+      font-weight: 500;
+    }
+    .nav-link:hover {
+      color: #B29DFF !important;
+    }
+    main {
+      flex: 1;
+      padding-top: 30px;
+    }
+    footer {
+      background-color: #FFFFFF;
+      border-top: 1px solid #ddd;
+      color: #555;
+      padding: 15px;
+      text-align: center;
+    }
+    footer a {
+      color: #4D97FF;
+    }
+    footer a:hover {
+      color: #B29DFF;
+      text-decoration: none;
+    }
+
+    h1, h2, h3, h4, h5 {
+      color: #4D97FF;
+      font-weight: 600;
+    }
+    a:hover {
+      color: #B29DFF;
+    }
+
+    .btn-primary {
+      background-color: #4D97FF;
+      border-color: #4D97FF;
+      border-radius: 25px;
+      color: #fff;
+    }
+    .btn-primary:hover {
+      background-color: #B29DFF;
+      border-color: #B29DFF;
+      color: #333333;
+    }
+
+    .btn-outline-primary {
+      color: #4D97FF;
+      border-color: #4D97FF;
+      border-radius: 25px;
+    }
+    .btn-outline-primary:hover {
+      background-color: #4D97FF;
+      color: #FFFFFF;
+    }
+
+    .btn-outline-danger {
+      color: #FF6B6B;
+      border-color: #FF6B6B;
+      border-radius: 25px;
+    }
+    .btn-outline-danger:hover {
+      background-color: #FF6B6B;
+      color: #FFFFFF;
+    }
+
+    .card {
+      background-color: #FFFFFF;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .list-group-item {
+      background-color: #FFFFFF;
+      color: #333333;
+      border: 1px solid #ddd;
+    }
+
+    .alert {
+      border-radius: 8px;
+      border: none;
+    }
+    .alert-success {
+      background-color: #2D6A4F;
+      color: #D9F8E2;
+    }
+    .alert-danger {
+      background-color: #F16E6E;
+      color: #FCE7E7;
+    }
+    .alert-info {
+      background-color: #1E69A1;
+      color: #DAF1FF;
+    }
+
+    .form-control {
+      background-color: #FFFFFF;
+      border: 1px solid #ddd;
+      color: #333333;
+      border-radius: 8px;
+    }
+
+    .form-control:focus {
+      border-color: #4D97FF;
+      box-shadow: 0 0 0 0.2rem rgba(77, 151, 255, 0.25);
+    }
+
+    .form-check-input:checked {
+      background-color: #4D97FF;
+      border-color: #4D97FF;
+    }
+
+    .urgent {
+      border-left: 4px solid #FF6B6B;
+    }
+    .warning {
+      border-left: 4px solid #FFCB4B;
+    }
+    .safe {
+      border-left: 4px solid #4D97FF;
+    }
+
+    @media (max-width: 768px) {
+      .navbar-brand {
+        font-size: 1.3rem;
+      }
+    }
   </style>
 </head>
-<body class="d-flex flex-column min-vh-100">
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+
+<body>
+  <nav class="navbar navbar-expand-lg navbar-light">
     <div class="container">
       <a class="navbar-brand" href="/">Tracker</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
@@ -35,7 +170,6 @@
           {{#if user}}
             <li class="nav-item"><a class="nav-link" href="/dashboard">Dashboard</a></li>
             <li class="nav-item"><a class="nav-link" href="/calendar">Calendar</a></li>
-            <li class="nav-item"><a class="nav-link" href="/schedule">Schedule</a></li>
             <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
           {{else}}
             <li class="nav-item"><a class="nav-link" href="/login">Login</a></li>
@@ -45,7 +179,7 @@
     </div>
   </nav>
 
-  <main class="container my-4 flex-grow-1">
+  <main class="container">
     {{#if success_msg}}
       <div class="alert alert-success alert-dismissible fade show" role="alert">
         {{success_msg}}
@@ -67,13 +201,15 @@
     {{{body}}}
   </main>
 
-  <footer class="bg-dark text-center py-3 mt-auto">
-    <p class="mb-0 text-light">
+  <footer>
+    <p>
       Built by <a href="https://github.com/mrboora04" target="_blank">mrboora04</a> | 
       <a href="https://github.com/mrboora04/COMP2068JSFrameworks" target="_blank">View Source</a>
     </p>
   </footer>
 
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
