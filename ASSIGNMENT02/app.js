@@ -15,7 +15,7 @@ const exphbs = require('express-handlebars');
 const Assignment = require('./models/assignment');
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/user');
-const assignmentsRouter = require('./routes/assignment');
+const assignmentsRouter = require('./routes/Assignment');
 
 // Initialize Express app
 const app = express();
